@@ -32,6 +32,7 @@ from hindsight_api.engine.providers.nous_auth import (
     NousNotLoggedInError,
     NousRefreshExpiredError,
 )
+from hindsight_api.engine.providers.nous_hermes_delegate import nous_auth_manager_class
 from hindsight_api.engine.providers.openai_compatible_headers import with_openai_compatible_user_agent
 from hindsight_api.engine.providers.openai_compatible_llm import OpenAICompatibleLLM
 
@@ -55,7 +56,8 @@ class NousLLM(OpenAICompatibleLLM):
         **kwargs: Any,
     ):
         try:
-            self._auth = NousAuthManager.from_file()
+            # Fork: refresh goes through Hermes' resolver (see nous_hermes_delegate).
+            self._auth = nous_auth_manager_class().from_file()
         except NousNotLoggedInError as e:
             raise ProviderUnavailableError(
                 f"Failed to load Nous Portal credentials: {e}\n\n"
